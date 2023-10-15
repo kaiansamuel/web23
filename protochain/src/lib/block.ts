@@ -1,5 +1,6 @@
 import sha256 from 'crypto-js/sha256';
 import Validation from './validation';
+import BlockInfo from './blockinfo';
 
 export default class Block {
   index: number;
@@ -56,5 +57,12 @@ export default class Block {
     if(this.hash !== this.getHash() || !this.hash.startsWith(prefix))
      return new Validation(false, 'Invalid Hash');
     return new Validation();
+  }
+  static fromBlockInfo(blockinfo: BlockInfo): Block{
+    const block = new Block();
+    block.index = blockinfo.index;
+    block.previousHash = blockinfo.previousHash;
+    block.data = blockinfo.data;
+    return block;
   }
 }
