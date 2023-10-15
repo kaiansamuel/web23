@@ -1,7 +1,7 @@
 import Block from './block'
 import Validation from '../validation';
 
-//Mocked Blockchain class
+//Blockchain class
 export default class Blockchain {
   blocks: Block[];
   nextIndex: number = 0;

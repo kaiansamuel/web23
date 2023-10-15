@@ -65,6 +65,10 @@ describe("Blockchain tests", () => {
     expect(result.sucess).toEqual(false);
   })
 
- 
+  test('Should get next block info', () => {
+    const blockchain  = new Blockchain();
+    const info = blockchain.getNextBlock();
+    expect(info.index).toEqual(1);
+  })
 
 })
