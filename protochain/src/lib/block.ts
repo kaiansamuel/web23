@@ -28,7 +28,7 @@ export default class Block {
   }
   //Generates a new valid hash for this block with the specified difficulty
   //@param difficulty - The blockchain current difficulty
-  //@param miner - The miner wallet adress
+  //@param miner - The miner wallet adresss
   mine(difficulty: number, miner: string){
     this.miner = miner;
     const prefix = new Array(difficulty + 1).join('0');
