@@ -1,3 +1,5 @@
+import Transaction from "./transaction";
+
 //The Block Info Interface
 export default interface BlockInfo {
   index: number;
@@ -5,5 +7,5 @@ export default interface BlockInfo {
   difficulty: number;
   maxDifficulty: number;
   feePerTx: number;
-  data: string; 
+  transactions: Transaction[]; 
 }
