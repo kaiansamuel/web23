@@ -26,9 +26,14 @@ export default class Transaction {
     if(this.hash !== this.getHash())
     return new Validation(false, 'Invalid hash!');
   
-  if(!this.to){
+    if(!this.to){
     return new Validation(false, 'Invalid to!');
   }
-  return new Validation();
+    if(this.txInput){
+      const validation = this.txInput.isValid();
+      if(!validation.sucess)
+        return new Validation(false, `Invalid tx: ${validation.message}`)
+    }
+    return new Validation();
   }
 }
