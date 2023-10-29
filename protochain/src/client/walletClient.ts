@@ -1,9 +1,12 @@
-import dotenv from 'dotenv';
+import dotenv, { parse } from 'dotenv';
 dotenv.config();
 
 import axios from 'axios';
 import readLine from 'readline';
 import Wallet from "../lib/wallet";
+import Transaction from '../lib/transaction';
+import TransactionType from '../lib/transactionType';
+import TransactionInput from '../lib/transactionInput';
 
 const BLOCKCHAIN_SERVER = process.env.BLOCKCHAIN_SERVER
 
@@ -93,7 +96,45 @@ function senTX(){
     console.log(`You don't have a wallet yet.`);
     return preMenu();
   }
+  console.log(`Your wallet is ${myWallePub}`);
+  rl.question('To wallet: ', (toWallet) => {
+    if(toWallet.length < 66){
+      console.log('Invalid Wallet');
+      return preMenu();
+    }
+    rl.question('Amount', async (amountStr) => {
+      const amount = parseInt(amountStr)
+      if(!amount){
+        console.log('Invalid Amount.');
+        return preMenu();
+      }
 
+      //TODO balance validation
+
+      const tx = new Transaction();
+      tx.timestamp = Date.now();
+      tx.to = toWallet;
+      tx.type = TransactionType.REGULAR;
+      tx.txInput = new TransactionInput({
+        amount,
+        fromAdress: myWallePub
+      } as TransactionInput)
+
+      tx.txInput.sign(myWallePri);
+      tx.hash = tx.getHash();
+
+      try {
+        const txResponse = await axios.post(`http://localhost:3000/transactions/`, tx); 
+        console.log('Transaction accepted. Waiting the miners!');
+        console.log(txResponse.data.hash);       
+      } catch (err: any) {
+          console.error(err.response ? err.response.data : err.message);
+      }
+
+      return preMenu();
+
+    })
+  })
   //TODO: send tx via api;
   preMenu();
 }

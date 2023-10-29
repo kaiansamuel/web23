@@ -18,7 +18,7 @@ let totalMined = 0;
 
 async function mine(){
   console.log('Geting next block info...')
-  const { data } = await axios.get(`${BLOCKCHAIN_SERVER}blocks/next`);
+  const { data } = await axios.get(`http://localhost:3000/blocks/next`);
   if(!data){
     console.log('No tx found, Waiting...');
     return setTimeout(() => {
@@ -36,7 +36,7 @@ async function mine(){
   console.log('Blocked mined! Sending to blockchain...')
   
   try {
-    await axios.post(`${BLOCKCHAIN_SERVER}blocks/`, newBlock);
+    await axios.post(`http://localhost:3000/blocks/`, newBlock);
     console.log('Block send and accepted!')
     totalMined++;
     console.log(`Total mined Blocks: ${totalMined}`)
