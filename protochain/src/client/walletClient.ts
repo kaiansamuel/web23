@@ -126,7 +126,7 @@ function senTX(){
       tx.hash = tx.getHash();
 
       try {
-        const txResponse = await axios.post(`http://localhost:3000/transactions/`, tx); 
+        const txResponse = await axios.post(`http://localhost:3040/transactions/`, tx); 
         console.log('Transaction accepted. Waiting the miners!');
         console.log(txResponse.data.hash);       
       } catch (err: any) {
@@ -144,7 +144,7 @@ function senTX(){
 function searchTx(){
   console.clear();
   rl.question(`Your tx hash: `, async (hash) => {
-    const response = await axios.get(`${BLOCKCHAIN_SERVER}/transactions/${hash}`);
+    const response = await axios.get(`http://localhost:3040/transactions/${hash}`);
     console.log(response.data);
     return preMenu();
   })

@@ -19,6 +19,12 @@ app.use(express.json())
 
 const blockchain = new Blockchain()
 
+app.get('/',(req, res, next) => {
+  res.send({
+    message: 'Hello World!'
+  })  
+})
+
 app.get('/status', (req, res, next) => {
   res.json({
     mempool: blockchain.mempool.length,
