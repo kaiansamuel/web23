@@ -7,6 +7,7 @@ import Wallet from "../lib/wallet";
 import Transaction from '../lib/transaction';
 import TransactionType from '../lib/transactionType';
 import TransactionInput from '../lib/transactionInput';
+import TransactionOutput from '../lib/transactionOutput';
 
 const BLOCKCHAIN_SERVER = process.env.BLOCKCHAIN_SERVER
 
@@ -111,19 +112,34 @@ function senTX(){
         return preMenu();
       }
 
+      const walletResponse = await axios.get(`${BLOCKCHAIN_SERVER}wallets/${myWallePub}`);
+      const balance = walletResponse.data.balance as number;
+      const fee = walletResponse.data.fee as number;
+      const utxo = walletResponse.data.utxo as TransactionOutput[];
+
+      if(balance < amount + fee){
+        console.log('Insuficient balance(tx + fee)');
+        return preMenu();
+      }
       //TODO balance validation
 
       const tx = new Transaction();
       tx.timestamp = Date.now();
-      tx.to = toWallet;
-      tx.type = TransactionType.REGULAR;
-      tx.txInput = new TransactionInput({
-        amount,
-        fromAdress: myWallePub
-      } as TransactionInput)
+      tx.txOutputs = [new TransactionOutput({
+        toAdress: toWallet,
+        amount
+      } as TransactionOutput)];
 
-      tx.txInput.sign(myWallePri);
+      tx.type = TransactionType.REGULAR;
+      tx.txInputs = [new TransactionInput({
+        amount,
+        fromAdress: myWallePub,
+        previousTx: utxo[0].tx
+      } as TransactionInput)]
+
+      tx.txInputs[0].sign(myWallePri);
       tx.hash = tx.getHash();
+      tx.txOutputs[0].tx = tx.hash;
 
       try {
         const txResponse = await axios.post(`http://localhost:3040/transactions/`, tx); 
