@@ -2,9 +2,9 @@ import Block from './block'
 import Validation from '../validation';
 import BlockInfo from '../blockinfo';
 import Transaction from './transaction';
-import TransactionType from '../transactionType';
 import TransactionSearch from '../transactionSearch';
 import TransactionInput from '../transactionInput';
+import TransactionOutput from '../transactionOutput';
 
 //Blockchain class
 export default class Blockchain {
@@ -16,13 +16,13 @@ export default class Blockchain {
     this.blocks = [];
     this.mempool = [new Transaction()];
 
-    this.blocks.push([new Block({
+    this.blocks.push(new Block({
       index: 0,
       hash: 'abc',
       previousHash: "",
-     miner,
+      miner,
       timestamp: Date.now()
-    } as Block)]);
+    } as Block));
     this.nextIndex++;
   }
 
@@ -78,5 +78,30 @@ export default class Blockchain {
       feePerTx: this.getFeePerTx(),
       maxDifficulty: 62
     } as BlockInfo;
+  }
+
+  getTxInputs(wallet: string): (TransactionInput | undefined)[]{
+    return [new TransactionInput({
+      amount: 10,
+      fromAdress: wallet,
+      previousTx: 'abc',
+      signature: 'abc'
+  } as TransactionInput)]
+  }
+
+  getTxOutputs(wallet: string): TransactionOutput[]{
+    return [new TransactionOutput({
+      amount: 10,
+      toAdress: wallet,
+      tx: 'abc'
+    } as TransactionOutput)]
+  }
+
+  getUtxo(wallet: string): TransactionOutput[] {
+    return this.getTxOutputs(wallet);
+  }
+
+  getBalance(wallet: string): number {
+    return 10;
   }
 }
