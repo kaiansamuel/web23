@@ -6,6 +6,7 @@ import TransactionType from './transactionType';
 import TransactionSearch from './transactionSearch';
 import TransactionOutput from './transactionOutput';
 import { text } from 'express';
+import TransactionInput from './transactionInput';
 
 //Blockchain class
 export default class Blockchain {
@@ -66,8 +67,14 @@ export default class Blockchain {
     if(pendingTX && pendingTX.length)
         return new Validation(false, 'This wallet has a pending transaction.')
 
-        //TODO: Validar a origem dos fundos
+      const utxo = this.getUtxo(from);
+      for(let i = 0; i < transaction.txInputs.length; i++){
+        const txi = transaction.txInputs[i];
+        if(utxo.findIndex(txo => txo.tx === txi.previousTx && txi.amount) === -1)
+          return new Validation(false, 'Invalid tx: The txo is already spent or unexistent')
+      }
     }
+    //TODO: Fazer versao final que valida as taxas;
     const validation = transaction.isValid();
     if(!validation.sucess)
       return new Validation(false, 'Invalid tx' + validation.message)
@@ -155,5 +162,46 @@ export default class Blockchain {
       feePerTx,
       maxDifficulty
     } as BlockInfo;
+  }
+
+  getTxInputs(wallet: string): (TransactionInput | undefined)[] {
+    return this.blocks
+      .map(b => b.transactions)
+      .flat()
+      .filter(tx => tx.txInputs && tx.txInputs.length)
+      .map(tx => tx.txInputs)
+      .flat()
+      .filter(txi => txi!.fromAdress === wallet)
+  }
+
+  getTxOutputs(wallet: string): TransactionOutput[]{
+    return this.blocks
+      .map(b => b.transactions)
+      .flat()
+      .filter(tx => tx.txOutputs && tx.txOutputs.length)
+      .map(tx => tx.txOutputs)
+      .flat()
+      .filter(txo => txo.toAdress === wallet)
+
+  }
+
+  getUtxo(wallet: string): TransactionOutput[]{
+    const txIns = this.getTxInputs(wallet);
+    const txOuts = this.getTxOutputs(wallet)
+
+    if(!txIns || !txIns.length) return txOuts;
+
+    txIns.forEach(txi => {
+      const index = txOuts.findIndex(txo => txo.amount === txi!.amount);
+      txOuts.splice(index, 1)
+    })
+    return txOuts;
+  }
+  
+  getBalance(wallet: string): number{
+    const utxo = this.getUtxo(wallet);
+    if(!utxo || !utxo.length) return 0;
+
+    return utxo.reduce((a,b) => a + b.amount, 0)
   }
 }
