@@ -26,9 +26,9 @@ export default class Transaction {
     return 'abc';
   }
 
-  isValid(): Validation {
+  isValid(difficulty: number, totalFees: number): Validation {
 
-  if(this.timestamp < 1 || this.hash)
+  if(this.timestamp < 1 || this.hash || !difficulty || !totalFees)
    return new Validation(false, 'Invalid mock transaction');
 
   

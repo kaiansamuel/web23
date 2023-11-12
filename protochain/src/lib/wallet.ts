@@ -1,31 +1,17 @@
-import * as ecc from 'tiny-secp256k1';
-import ECPairFactory, { ECPairInterface } from 'ecpair';
-
-const ECPair = ECPairFactory(ecc);
-
 /**
- * Wallet class
+ * Validation class
  */
-export default class Wallet {
+export default class Validation {
+    success: boolean;
+    message: string;
 
-    privateKey: string;
-    publicKey: string;
-
-    constructor(wifOrPrivateKey?: string) {
-        let keys;
-
-        if (wifOrPrivateKey) {
-            if (wifOrPrivateKey.length === 64)
-                keys = ECPair.fromPrivateKey(Buffer.from(wifOrPrivateKey, "hex"));
-            else
-                keys = ECPair.fromWIF(wifOrPrivateKey);
-        }
-        else
-            keys = ECPair.makeRandom();
-
-        /* c8 ignore next */
-        this.privateKey = keys.privateKey?.toString("hex") || "";
-        this.publicKey = keys.publicKey.toString("hex");
+    /**
+     * Creates a new validation object
+     * @param success If the validation was successful
+     * @param message The validation message, if validation failed
+     */
+    constructor(success: boolean = true, message: string = "") {
+        this.success = success;
+        this.message = message;
     }
-
 }

@@ -1,107 +1,46 @@
-import Block from './block'
-import Validation from '../validation';
-import BlockInfo from '../blockinfo';
-import Transaction from './transaction';
-import TransactionSearch from '../transactionSearch';
-import TransactionInput from '../transactionInput';
-import TransactionOutput from '../transactionOutput';
+import TransactionInput from "./transactionInput";
+import TransactionType from "../transactionType"
+import Validation from "../validation";
+import TransactionOutput from "./transactionOutput";
 
-//Blockchain class
-export default class Blockchain {
-  blocks: Block[];
-  mempool: Transaction[];
-  nextIndex: number = 0;
-  //Creates a new mocked Blockchain
-  constructor(miner: string){
-    this.blocks = [];
-    this.mempool = [new Transaction()];
+/**
+ * Mocked Transaction class
+ */
+export default class Transaction {
+    type: TransactionType;
+    timestamp: number;
+    hash: string;
+    txInputs: TransactionInput[] | undefined;
+    txOutputs: TransactionOutput[];
 
-    this.blocks.push(new Block({
-      index: 0,
-      hash: 'abc',
-      previousHash: "",
-      miner,
-      timestamp: Date.now()
-    } as Block));
-    this.nextIndex++;
-  }
+    constructor(tx?: Transaction) {
+        this.type = tx?.type || TransactionType.REGULAR;
+        this.timestamp = tx?.timestamp || Date.now();
+        this.txOutputs = tx?.txOutputs || [new TransactionOutput()];
+        this.txInputs = tx?.txInputs || [new TransactionInput()];
+        this.hash = tx?.hash || this.getHash();
+    }
 
-  getLastBlock(): Block{
-    return this.blocks[this.blocks.length -1]
-  }
+    getHash(): string {
+        return "abc";
+    }
 
-  addBlock(block: Block): Validation{
-    if(block.index < 0) return new Validation(false, 'Invalid mock block')
-   
-    this.blocks.push(block);
-    this.nextIndex++;
+    isValid(difficulty: number, totalFees: number): Validation {
+        if (this.timestamp < 1 || !this.hash || difficulty < 1 || totalFees < 0)
+            return new Validation(false, "Invalid mock transaction.");
 
-    return new Validation();
-  }
+        return new Validation();
+    }
 
-  addTransaction(transaction: Transaction): Validation {
-    const validation = transaction.isValid();
-    if(!validation.sucess) return validation;
+    static fromReward(txo: TransactionOutput): Transaction {
+        const tx = new Transaction({
+            type: TransactionType.FEE,
+            txOutputs: [txo]
+        } as Transaction)
 
-    this.mempool.push(transaction);
-    return new Validation();
-  }
-
-  getTransaction(hash: string): TransactionSearch{
-    if(hash === '-1')
-      return { mempoolIndex: -1, blockIndex: -1 } as TransactionSearch;
-    return {
-      mempoolIndex: 0,
-      transaction: new Transaction();
-    } as TransactionSearch;
-  }
-
-  getBlock(hash: string): Block | undefined {
-    if(!hash || hash === '-1') return undefined;
-    return this.blocks.find(b => b.hash === hash)
-  }
-
-  isValid(): Validation {
-    return new Validation();
-  }  
-
-  getFeePerTx(): number {
-    return 1;
-  }
-
-  getNextBlock(): BlockInfo{
-      return {
-      transactions: this.mempool.slice(0, 2),
-      difficulty: 1,
-      previousHash: this.getLastBlock().hash,
-      index: this.blocks.length,
-      feePerTx: this.getFeePerTx(),
-      maxDifficulty: 62
-    } as BlockInfo;
-  }
-
-  getTxInputs(wallet: string): (TransactionInput | undefined)[]{
-    return [new TransactionInput({
-      amount: 10,
-      fromAdress: wallet,
-      previousTx: 'abc',
-      signature: 'abc'
-  } as TransactionInput)]
-  }
-
-  getTxOutputs(wallet: string): TransactionOutput[]{
-    return [new TransactionOutput({
-      amount: 10,
-      toAdress: wallet,
-      tx: 'abc'
-    } as TransactionOutput)]
-  }
-
-  getUtxo(wallet: string): TransactionOutput[] {
-    return this.getTxOutputs(wallet);
-  }
-
-  getBalance(wallet: string): number {
-    return 10;
-  }
+        tx.txInputs = undefined;
+        tx.hash = tx.getHash();
+        tx.txOutputs[0].tx = tx.hash;
+        return tx;
+    }
 }
